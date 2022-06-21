@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:twilio_flutter/twilio_flutter.dart';
 
 class AddStudentForm extends StatefulWidget {
   final String studentId;
@@ -39,11 +40,11 @@ class _AddStudentFormState extends State<AddStudentForm> {
 
   // Create a CollectionReference called users that references the firestore collection
   final CollectionReference _users =
-  FirebaseFirestore.instance.collection('users');
+      FirebaseFirestore.instance.collection('users');
 
   // Create a CollectionReference called users that references the firestore collection
   final CollectionReference _courses =
-  FirebaseFirestore.instance.collection('courses');
+      FirebaseFirestore.instance.collection('courses');
 
   List<String> _selectedCourses = [];
 
@@ -56,11 +57,16 @@ class _AddStudentFormState extends State<AddStudentForm> {
       _guardian_name,
       _guardian_number,
       _password;
+  TwilioFlutter? twilioFlutter;
 
   @override
   void initState() {
     super.initState();
 
+    twilioFlutter = TwilioFlutter(
+        accountSid: 'ACe2dea17b47690167d76369b4fa0bf1e0',
+        authToken: 'e491a260522f7ad5781f3c6bbcc5a132',
+        twilioNumber: '+19378575801');
     //to fill-up data of dropdown~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EasyLoading.show(
       status: 'Loading...',
@@ -119,11 +125,10 @@ class _AddStudentFormState extends State<AddStudentForm> {
 
     var id = widget.studentId != '' ? widget.studentId : _generatedId;
     var name =
-    _nameTextController.text != '' ? _nameTextController.text : _full_name;
+        _nameTextController.text != '' ? _nameTextController.text : _full_name;
 
     DatabaseEvent nodeCount = await database.ref('users').once();
     String f_ID = (nodeCount.snapshot.children.length + 1).toString();
-
 
     deviceRef = database.ref("device");
     userRef = database.ref("users/$f_ID");
@@ -158,6 +163,19 @@ class _AddStudentFormState extends State<AddStudentForm> {
     });
   }
 
+  void sendSms() async {
+    twilioFlutter!.sendSMS(
+        toNumber: '+923212069641',
+        messageBody:
+            'AMS ALERT !!! Dear Guardian Student ${_full_name} has been registerd.\n Login credentials are (Username: ${_username} Password: ${_password})');
+  }
+
+  void getSms() async {
+    var data = await twilioFlutter!.getSmsList();
+    print(data);
+    await twilioFlutter!.getSMS('***************************');
+  }
+
   void _trySubmit() {
     final isValid = _formKey.currentState!.validate();
 
@@ -188,6 +206,7 @@ class _AddStudentFormState extends State<AddStudentForm> {
       }).then((value) {
         print("Course Added");
         EasyLoading.showSuccess('Record updated');
+
         _nameTextController.text = "";
         Navigator.of(context).pop();
         Navigator.of(context).pop();
@@ -202,7 +221,7 @@ class _AddStudentFormState extends State<AddStudentForm> {
     //Add record~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if (isValid && widget.studentId == '') {
       // _formKey.currentState!.reset();
-
+      sendSms();
       //Getting usernames
       _users
           .where('username', isEqualTo: _username)
@@ -266,7 +285,7 @@ class _AddStudentFormState extends State<AddStudentForm> {
                     textCapitalization: TextCapitalization.none,
                     enableSuggestions: false,
                     decoration:
-                    const InputDecoration(labelText: 'Student username'),
+                        const InputDecoration(labelText: 'Student username'),
                     keyboardType: TextInputType.text,
                     maxLength: 10,
                     validator: (value) {
@@ -292,7 +311,7 @@ class _AddStudentFormState extends State<AddStudentForm> {
                     textCapitalization: TextCapitalization.none,
                     enableSuggestions: false,
                     decoration:
-                    const InputDecoration(labelText: 'Student full name'),
+                        const InputDecoration(labelText: 'Student full name'),
                     keyboardType: TextInputType.text,
                     validator: (value) {
                       value = value!.trim();
@@ -317,9 +336,9 @@ class _AddStudentFormState extends State<AddStudentForm> {
                     textCapitalization: TextCapitalization.none,
                     enableSuggestions: false,
                     decoration:
-                    const InputDecoration(labelText: 'Mobile Number'),
+                        const InputDecoration(labelText: 'Mobile Number'),
                     keyboardType: TextInputType.text,
-                    maxLength: 11,
+                    maxLength: 13,
                     validator: (value) {
                       value = value!.trim();
                       if (value.isEmpty) {
@@ -340,7 +359,7 @@ class _AddStudentFormState extends State<AddStudentForm> {
                     textCapitalization: TextCapitalization.none,
                     enableSuggestions: false,
                     decoration:
-                    const InputDecoration(labelText: 'Student Email'),
+                        const InputDecoration(labelText: 'Student Email'),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       value = value!.trim();
@@ -365,7 +384,7 @@ class _AddStudentFormState extends State<AddStudentForm> {
                     textCapitalization: TextCapitalization.none,
                     enableSuggestions: false,
                     decoration:
-                    const InputDecoration(labelText: 'Guardian Name'),
+                        const InputDecoration(labelText: 'Guardian Name'),
                     keyboardType: TextInputType.text,
                     validator: (value) {
                       value = value!.trim();
@@ -392,7 +411,7 @@ class _AddStudentFormState extends State<AddStudentForm> {
                     decoration: const InputDecoration(
                         labelText: 'Guardian Mobile Number'),
                     keyboardType: TextInputType.text,
-                    maxLength: 11,
+                    maxLength: 13,
                     validator: (value) {
                       value = value!.trim();
                       if (value.isEmpty) {
@@ -460,7 +479,7 @@ class _AddStudentFormState extends State<AddStudentForm> {
                     textCapitalization: TextCapitalization.none,
                     enableSuggestions: false,
                     decoration:
-                    const InputDecoration(labelText: 'Confirm Password'),
+                        const InputDecoration(labelText: 'Confirm Password'),
                     keyboardType: TextInputType.visiblePassword,
                     validator: (value) {
                       value = value!.trim();
@@ -486,53 +505,54 @@ class _AddStudentFormState extends State<AddStudentForm> {
                   Card(
                     child: fingerIconStatus == "initial"
                         ? IconButton(
-                      icon: Icon(Icons.fingerprint),
-                      iconSize: 80,
-                      onPressed: activateDevice,
-                    )
+                            icon: Icon(Icons.fingerprint),
+                            iconSize: 80,
+                            onPressed: activateDevice,
+                          )
                         : fingerIconStatus == "pending"
-                        ? Padding(
-                      padding: const EdgeInsets.all(30.0),
-                      child: CircularProgressIndicator(),
-                    )
-                        : fingerIconStatus == "success"
-                        ? IconButton(
-                      icon: Icon(Icons.done_outline_rounded),
-                      iconSize: 80,
-                      onPressed: activateDevice,
-                    )
-                        : IconButton(
-                      icon: Icon(Icons.error_outline_rounded),
-                      iconSize: 80,
-                      onPressed: activateDevice,
-                    ),
+                            ? Padding(
+                                padding: const EdgeInsets.all(30.0),
+                                child: CircularProgressIndicator(),
+                              )
+                            : fingerIconStatus == "success"
+                                ? IconButton(
+                                    icon: Icon(Icons.done_outline_rounded),
+                                    iconSize: 80,
+                                    onPressed: activateDevice,
+                                  )
+                                : IconButton(
+                                    icon: Icon(Icons.error_outline_rounded),
+                                    iconSize: 80,
+                                    onPressed: activateDevice,
+                                  ),
                   ),
 
                   const SizedBox(
                     height: 50,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      MaterialButton(
-                        child: Container(
-                          child: Text(
-                            widget.studentId == '' || widget.studentId.isEmpty
-                                ? "Generate ID"
-                                : "Save Record",
-                            style: TextStyle(fontSize: 20),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20),
-                        ),
-                        onPressed: _trySubmit,
-                        color: Theme
-                            .of(context)
-                            .primaryColor,
-                        textColor: Colors.white,
-                      )
-                    ],
-                  ),
+                  fingerIconStatus == "success"
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            MaterialButton(
+                              child: Container(
+                                child: Text(
+                                  widget.studentId == '' ||
+                                          widget.studentId.isEmpty
+                                      ? "Generate ID"
+                                      : "Save Record",
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 20),
+                              ),
+                              onPressed: _trySubmit,
+                              color: Theme.of(context).primaryColor,
+                              textColor: Colors.white,
+                            )
+                          ],
+                        )
+                      : Container(),
                   const SizedBox(
                     height: 50,
                   ),

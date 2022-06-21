@@ -1,4 +1,5 @@
 import 'package:biometric_attendance_system/view_screen/attendance_view/attendance_view_card.dart';
+import 'package:biometric_attendance_system/view_screen/attendance_view/attendancedetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -111,8 +112,12 @@ class _AttendanceViewState extends State<AttendanceView> {
                 courseName: e['course_name'] ?? '',
                 courseDay: e['course_day'] ?? '',
                 courseId: e['id'] ?? '',
-                courseTime: e['course_time'] ?? '',
+                courseStartTime: e['course_start_time'] ?? '',
+                courseEndTime: e['course_end_time'] ?? '',
                 onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => AttendeceOfCource(e['course_name'],
+                          e['id'].toString(), e['course_term'])));
                   // directly showing animated card on onPressed()
                 },
               );

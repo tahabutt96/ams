@@ -16,9 +16,8 @@ class TeacherView extends StatefulWidget {
 }
 
 class _TeacherViewState extends State<TeacherView> {
-
   final CollectionReference _users =
-  FirebaseFirestore.instance.collection('users');
+      FirebaseFirestore.instance.collection('users');
 
   final List<Map<String, dynamic>> listOfTeachers = [];
 
@@ -44,11 +43,8 @@ class _TeacherViewState extends State<TeacherView> {
     }).whenComplete(() => EasyLoading.dismiss());
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -59,7 +55,7 @@ class _TeacherViewState extends State<TeacherView> {
             .map(
               (e) => TeacherViewCard(
                 teacherName: e['name'] ?? '',
-                userName: e['username'] ?? '',
+                userName: e['username'] + ' - ${e['id'].toString()}' ?? '',
                 onPressedDelete: () {
                   // Navigator.of(context).pushNamed(routeName)
                   _showDeleteDialog(
@@ -69,7 +65,8 @@ class _TeacherViewState extends State<TeacherView> {
                     doc_id: e['id'].toString(),
                   );
                 },
-                onPressedUpdate:()=> Navigator.of(context).pushNamed(FormScreen.routeName,
+                onPressedUpdate: () => Navigator.of(context).pushNamed(
+                    FormScreen.routeName,
                     arguments: {"type": "Teacher", "ID": e['id']}),
               ),
             )
@@ -82,7 +79,7 @@ class _TeacherViewState extends State<TeacherView> {
       {required String title,
       required String message,
       required BuildContext context,
-        required String doc_id}) {
+      required String doc_id}) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.attendance.app">
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+
    <application
         android:label="biometric_attendance_system"
         android:icon="@mipmap/launcher_icon">

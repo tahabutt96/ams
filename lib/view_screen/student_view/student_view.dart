@@ -15,7 +15,6 @@ class StudentView extends StatefulWidget {
 }
 
 class _StudentViewState extends State<StudentView> {
-
   final CollectionReference _users =
       FirebaseFirestore.instance.collection('users');
 
@@ -45,7 +44,6 @@ class _StudentViewState extends State<StudentView> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -56,7 +54,7 @@ class _StudentViewState extends State<StudentView> {
             .map(
               (e) => TeacherViewCard(
                 teacherName: e['full_name'] ?? '',
-                userName: e['username'] ?? '',
+                userName: e['username'] + ' - ${e['id'].toString()}' ?? '',
                 onPressedDelete: () {
                   // Navigator.of(context).pushNamed(routeName)
                   _showDeleteDialog(
@@ -66,9 +64,11 @@ class _StudentViewState extends State<StudentView> {
                     doc_id: e['id'].toString(),
                   );
                 },
-                onPressedUpdate: () => Navigator.of(context).pushNamed(
-                    FormScreen.routeName,
-                    arguments: {"type": "Student", "ID": e['id'],}),
+                onPressedUpdate: () => Navigator.of(context)
+                    .pushNamed(FormScreen.routeName, arguments: {
+                  "type": "Student",
+                  "ID": e['id'],
+                }),
               ),
             )
             .toList(),
@@ -117,6 +117,4 @@ class _StudentViewState extends State<StudentView> {
       });
     });
   }
-
-
 }
